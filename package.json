@@ -17,6 +17,7 @@
 		"@remix-run/react": "^2.16.8",
 		"@remix-run/serve": "^2.16.8",
 		"add": "^2.0.6",
+		"bun": "^1.2.15",
 		"drizzle-kit": "^0.31.1",
 		"drizzle-orm": "^0.44.2",
 		"isbot": "^4.4.0",
@@ -24,8 +25,7 @@
 		"pg": "^8.16.0",
 		"postgres": "^3.4.7",
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"zx": "^7.2.2"
+		"react-dom": "^18.3.1"
 	},
 	"devDependencies": {
 		"@remix-run/dev": "^2.16.8",

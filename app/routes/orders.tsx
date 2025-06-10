@@ -51,9 +51,8 @@ export default function OrdersPage() {
 					<p className="text-gray-500">there are no orders</p>
 				)}
 			</div>
-			<p className="text-gray-500">support contact:</p>
 			<p className="text-gray-500">
-				<a href="mailto:test@ledraa.com">test@ledraa.com</a>
+				support contact: <a href="mailto:test@ledraa.com">test@ledraa.com</a>
 			</p>
 		</div>
 	);

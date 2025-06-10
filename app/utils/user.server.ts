@@ -81,7 +81,7 @@ export class UserManager {
 
 	async pay() {
 		const separator =
-			"______________________________________________________________________________________________________";
+			"\n\n______________________________________________________________________________________________________\n\n";
 		const items: any = await db.query.cartItems.findMany({
 			where: eq(cartItems.userId, this.userId),
 			with: {
@@ -104,7 +104,7 @@ export class UserManager {
 					.map((item: any) => {
 						return `${item.product.name} (x ${item.quantity}) price: ${
 							item.quantity * item.product.price
-						}`;
+						} $`;
 					})
 					.join(separator)} ${separator} [there is 10$ shipping fee]`,
 			},
