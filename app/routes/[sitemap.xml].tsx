@@ -1,10 +1,9 @@
 import { LoaderFunction } from "@remix-run/node";
+import { domain } from "~/config";
 import { db } from "~/db/db.server";
 import { products } from "~/db/schema";
 
 export const loader: LoaderFunction = async () => {
-	const domain = "https://store.ledraa.com";
-
 	const allProducts = await db
 		.select({
 			id: products.id,
@@ -24,7 +23,7 @@ export const loader: LoaderFunction = async () => {
 				.map(
 					(product) => `
       <url>
-        <loc>${domain}/part/${product.id}</loc>
+        <loc>${domain}/product/${product.id}</loc>
         <lastmod>${product.updatedAt.toISOString()}</lastmod>
       </url>`
 				)

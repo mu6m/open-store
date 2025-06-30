@@ -29,6 +29,7 @@ export const action = async ({ request }: any) => {
 						productId: cartItem.productId,
 						quantity: cartItem.quantity,
 						price: cartItem.product.price,
+						selectedDetails: cartItem.selectedDetails,
 					}))
 				);
 

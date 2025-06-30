@@ -2,6 +2,7 @@ import { and, eq, sql, sum } from "drizzle-orm";
 import { db } from "~/db/db.server";
 import { cartItems, products, users } from "~/db/schema";
 import { LemonsqueezyClient } from "lemonsqueezy.ts";
+import { domain, shipping, tax, title } from "~/config";
 
 export class UserManager {
 	private userId: any;
@@ -10,25 +11,15 @@ export class UserManager {
 		this.userId = userId;
 	}
 
-	async createUserIfNotExists(): Promise<void> {
-		const [existingUser] = await db
-			.select()
-			.from(users)
-			.where(eq(users.id, this.userId))
-			.limit(1);
-
-		if (!existingUser) {
-			await db.insert(users).values({
-				id: this.userId,
-				number: "",
-				address: "",
-			});
-		}
-	}
-
-	async addCart({ productId }: any) {
-		await this.createUserIfNotExists();
-
+	async addCart({
+		productId,
+		quantity = 1,
+		selectedDetails = {},
+	}: {
+		productId: string;
+		quantity?: number;
+		selectedDetails?: Record<string, any>;
+	}) {
 		const user = await db.query.users.findFirst({
 			where: eq(users.id, this.userId),
 		});
@@ -36,45 +27,58 @@ export class UserManager {
 		if (!user) {
 			throw new Error("User does not exist.");
 		}
+
 		const [inCart] = await db
 			.insert(cartItems)
-			.values({ userId: this.userId, productId, quantity: 1 })
+			.values({
+				userId: this.userId,
+				productId,
+				quantity,
+				selectedDetails,
+			})
 			.onConflictDoUpdate({
-				target: [cartItems.userId, cartItems.productId],
-				set: { quantity: sql`${cartItems.quantity} + 1` },
+				target: [
+					cartItems.userId,
+					cartItems.productId,
+					cartItems.selectedDetails,
+				],
+				set: {
+					quantity: sql`${cartItems.quantity} + ${quantity}`,
+					updatedAt: sql`now()`,
+				},
 			})
 			.returning({ quantity: cartItems.quantity });
+
 		return inCart.quantity;
 	}
-
 	async updateData({ number, address }: any): Promise<void> {
-		await this.createUserIfNotExists();
-
 		await db
 			.update(users)
 			.set({ number, address })
 			.where(eq(users.id, this.userId));
 	}
 
-	async removeCart({ productId }: any) {
+	async removeCart({ productId, selectedDetails }: any) {
 		await db
 			.delete(cartItems)
 			.where(
 				and(
 					eq(this.userId, cartItems.userId),
-					eq(productId, cartItems.productId)
+					eq(productId, cartItems.productId),
+					eq(cartItems.selectedDetails, selectedDetails)
 				)
 			);
 	}
 
-	async updateCart({ productId, quantity }: any) {
+	async updateCart({ productId, quantity, selectedDetails }: any) {
 		await db
 			.update(cartItems)
 			.set({ quantity })
 			.where(
 				and(
 					eq(this.userId, cartItems.userId),
-					eq(productId, cartItems.productId)
+					eq(productId, cartItems.productId),
+					eq(cartItems.selectedDetails, selectedDetails)
 				)
 			);
 	}
@@ -98,15 +102,17 @@ export class UserManager {
 				button_color: "#2DD272",
 			},
 			product_options: {
-				redirect_url: "https://store.ledraa.com/orders",
-				name: "open store",
+				redirect_url: `${domain}/orders`,
+				name: title,
 				description: `your items : ${separator} ${items
 					.map((item: any) => {
 						return `${item.product.name} (x ${item.quantity}) price: ${
 							item.quantity * item.product.price
 						} $`;
 					})
-					.join(separator)} ${separator} [there is 10$ shipping fee]`,
+					.join(
+						separator
+					)} ${separator} [${shipping}$ shipping fee + ${shipping}% tax ]`,
 			},
 			checkout_data: {
 				custom: {
@@ -114,8 +120,7 @@ export class UserManager {
 				},
 			},
 			expires_at: new Date(Date.now() + 5 * 60 * 1000),
-			custom_price: (total + 10) * 100,
-			//  * 105, add it if you need 5 percent more
+			custom_price: (total + shipping) * (100 + tax),
 			store: "59035",
 			variant: "558027",
 		});
