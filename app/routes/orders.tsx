@@ -38,6 +38,10 @@ export default function OrdersPage() {
 									<p className="text-sm text-gray-500">
 										status :<span className="font-medium">{order.status}</span>
 									</p>
+									<p className="text-xs text-gray-500">
+										details :
+										<span className="font-medium">{order.selectedDetails}</span>
+									</p>
 								</div>
 								<div className="text-right">
 									<p className="text-lg font-bold text-blue-600">
